@@ -7,13 +7,18 @@ tags:
 categories: 
 ---
 <!-- # Introduction -->
-<p style="align: left; text-align:center;">
-    <img src="/assets/img/blog/rfem_10seg.gif" alt width="55%"/>
+<!-- <p style="align: left; text-align:center;">
+    <img src="/assets/img/blog/rfem_10seg.gif" alt width="35%"/>
     <!-- <div class="caption">Figure 2. Visualization of the RFEM discretization</div> -->
+<!-- </p> --> 
+
+<p style="align: left; text-align:center;">
+    <img src="/assets/img/blog/rfem_comparison.gif" alt width="65%"/>
+    <!-- <div class="caption">Figure 4. Comparison between three different RFEM discretizations. From left to right: 3 segments, 5 segments and 10 segments</div> -->
 </p>
 
 
-The robotics community has shown significant interest in deformable object manipulation in recent years, with workshops hosted at [ICRA](https://deformable-workshop.github.io/icra2022/) and [IROS](https://romado-workshop.github.io/ROMADO2022/) in 2022. Both model-based and model-free approaches rely on accurate simulators. The finite element method (FEM), a powerful tool from continuum mechanics, can be computationally expensive for control. The rigid finite element method (RFEM) is a simpler and faster approach that can leverage existing rigid-body dynamics tools.
+The robotics community has shown significant interest in deformable object manipulation in recent years, with workshops hosted at [ICRA](https://deformable-workshop.github.io/icra2022/) and [IROS](https://romado-workshop.github.io/ROMADO2022/) in 2022. Both model-based and model-free approaches rely on accurate simulators. The finite element method (FEM), a powerful tool from continuum mechanics, can be computationally expensive for control. [The rigid finite element method](https://books.google.de/books?id=PhD8FDAzNJEC&printsec=frontcover&source=gbs_book_other_versions_r&redir_esc=y#v=onepage&q&f=false) (RFEM) is a simpler and faster approach that can leverage existing rigid-body dynamics tools.
 
 While not a new method, the RFEM — also known as the extended-flexible joint method or pseudo-rigid body method — remains a valuable modeling technique in robotics. This post explores its basic principles, limitations, and trade-offs, and provides a practical tutorial on simulating simple deformable linear object in Python using the [Pinocchio](https://stack-of-tasks.github.io/pinocchio/) library.
 
@@ -32,8 +37,8 @@ To make things clearer, let's consider a simple example of a cylindrical rod att
 
 The RFEM discretizes in two stages:
 
-1. Primary division: dividing the deformable object of length $$L$$ into relatively simple elements with finite dimension $$\Delta l$$ and concentrating their spring and damping features at one point as you can see in Figure 2a (the sde is obtained in this way);
-2. Secondary division: isolating rfes between sdes from the primary division to obtain a system of rfes connected by sdes (Figure 2b).
+1. Primary division: dividing the deformable object of length $$L$$ into relatively simple elements with finite dimension $$\Delta l$$ and concentrating their spring and damping features at one point (see Figure 2a);
+2. Secondary division: isolating rfes between sdes from the primary division to obtain a system of rfes connected by sdes (see Figure 2b).
 
 <p style="align: left; text-align:center;">
     <img src="/assets/img/blog/RFEM_discr.png" alt width="55%"/>
@@ -43,7 +48,7 @@ The RFEM discretizes in two stages:
 After discretization, we can treat the system as a serial chain of rigid bodies and derive its dynamics using the Lagrange or the Newton-Euler methods. To illustrate the general form of the RFEM dynamics, let's briefly go through the dynamics derivation using the Lagrange method. Let $$q = [q_a\ q_p]^T$$ denote the vector of joint angles, with $$q_a$$ being the active joint angle and $$q_p$$ being the passive joint angles of sdes. Using generalized coordinates, we can write down the energy functions used in the Lagrangian method
 
 $$
-K = \frac{1}{2}\dot q^T M(q) \dot q,\ P = \frac{1}{2} q^T K q + \sum_{i=0}^{n_s + 1} m_i g_0 p_{C_i}, \ D = \frac{1}{2}\dot q^T D \dot q.
+K(q, \dot q) = \frac{1}{2}\dot q^T M(q) \dot q,\ P(q) = \frac{1}{2} q^T K q + \sum_{i=0}^{n_s + 1} m_i g_0 p_{C_i}, \ D(\dot q) = \frac{1}{2}\dot q^T D \dot q.
 $$
 
 Here $$n_s$$ is the number of segments, $$M(q)$$ is the inertia matrix, $$K$$ and $$D$$ are the constant diagonal stiffness and damping matrices, respectively; $$m_i$$ and $$p_{C_i}$$ are $$i-$$the rfes mass and the center of mass, respectively; $$g_0 = [0\ 0\ -9.81]^T$$ is the gravity acceleration vector. Applying the Lagrange equations 
@@ -55,12 +60,12 @@ $$
 with $$\mathcal{L} = K - P$$ being the Lagrangian, we get the final expression for the RFEM dynamics:
 
 $$
-M(q) \ddot{q} + C(q, \dot{q}) \dot{q} + K q + D \dot{q} +  g(q) = B \tau
+M(q) \ddot{q} + C(q, \dot{q}) \dot{q} + K q + D \dot{q} +  g(q) = B \tau \tag{*}
 $$
 
 Comparing the final expression for RFEM dynamics to classical rigid-body manipulator dynamics, we see two new terms: $$Kq$$ representing linear spring forces and $$D\dot q$$ representing linear damper forces. Despite these new terms, the difference between RFEM dynamics and classical rigid-body dynamics is minor. Therefore, we can adapt existing efficient rigid-body algorithms to compute RFEM dynamics, and there is no need to implement new software. 
 
-To convert the model to state-space form for simulation and control purposes, we define a state vector $$x=[q\ \dot q]^T$$ and input $$u:= \tau$$:
+For simulation and control we often need state-space models. To convert the RFEM dynamics (*) to state-space form, we define a state vector $$x=[q\ \dot q]^T$$ and input $$u:= \tau$$:
 
 $$
 \dot x =  f(x, u) = 
@@ -85,7 +90,7 @@ However, for deformable objects with varying cross-sections and more complex sha
     <div class="caption">Figure 3. Cylindrical rfe</div>
 </p>
 
-Linear spring and damping parameters are the basic parameters of the sde. The stiffness $$k_i$$ of the spring is a three-dimensional diagonal matrix, while for the planar case, $$k_i$$ is a scalar. Similarly, the damping parameters $d_i$ also follow the same rule.
+Linear spring and damping parameters are the basic parameters of the sde. The stiffness $$k_i$$ of the spring is a three-dimensional diagonal matrix, while for the planar case, $$k_i$$ is a scalar. Similarly, the damping parameters $$d_i$$ also follow the same rule.
 
 The coefficients of stiffness and damping of the sde are based on the elasticity features of a beam segment with length $$\Delta l$$, such that the real segment of the beam will deform in the same way and with the same velocities of deformation as the equivalent sde under the same load. For homogenous materials of a specific constant cross-section, there are readily available formulas to calculate these coefficients. For our toy example, formulae are
 
@@ -95,11 +100,14 @@ $$
 
 where $$G$$ is the shear modulus and $$E$$ is Young's modulus. However, for more complex shapes, CAD software must be utilized.
 
+# Limitation of the RFEM
+
+
 # Tutorial: implementing the RFEM with Pinocchio to simulate flexible pendulum
 
 The tutorial leverages Pinocchio, an amazing tool for robot dynamics! Developed by Justin Carpentier, Pinocchio implements Roy Featherstone algorithms in C++, making it incredibly efficient. But that's not all - it's also been extended with new algorithms for computing derivatives of dynamics algorithms, constrained dynamics, and more. The best part? You can generate dynamics algorithms as a Casadi function and use them in optimal controller design.
 
-In this tutorial ([link to code](https://github.com/shamilmamedov/rfem)), we will define the setup using URDF, which supports geometry and  inertial parameters but unfortunately doesn't support joint elasticity.  Therefore, we will use a `.yaml`  file to define sde 
+In this tutorial ([link to code](https://github.com/shamilmamedov/rfem)), we will define the setup using URDF, which supports geometry and  inertial parameters but unfortunately doesn't support joint elasticity.  Therefore, we will use an additional `.yaml`  file to define sde 
 parameters. 
 <!-- We will then explore three different discretizations of the model, each consisting of 3, 5, and 10 segments respectively. All of  these models are available in the `models`  folder of the project. -->
 To modify the geometry and inertial parameters of the RFEM, you will  need to manually update the URDF files. But it's easy to  modify sde parameters (which is the most fun part) from the `rod_params.py` file by changing the $$G$$ and $$E$$ values. You can even use this file to compute the inertial parameters for a desired cylindrical rod.
@@ -162,7 +170,7 @@ def ode(self, x: np.ndarray, u: np.ndarray):
 
 ## Integrating RFEM dynamics
 
-It's important to note that RFE dynamics can be quite stiff, and using fixed-step integrators can result in divergence if the step size is too  large. To avoid this problem, I have opted to use a variable step  Runge-Kutta integrator from the `scipy.integrate`  package in this tutorial. 
+It's important to note that RFE dynamics can be quite [stiff](https://en.wikipedia.org/wiki/Stiff_equation), and using fixed-step integrators can result in divergence if the step size is too  large. To avoid this problem, I have opted to use a variable step  Runge-Kutta integrator from the `scipy.integrate`  package in this tutorial. 
 
 In order to simulate the flexible pendulum system, I have implemented a `simulate_flexible_pendulum`  function in the `simulation.py`  module. Additionally, to incorporate a controller into the simulation, I created a `controllers.py`  file which contains an abstract `BaseController`  class. To provide concrete implementations of controllers, I created a `DummyController`  class that always returns zero torque, and a `PDController`  that implements a proportional-derivative controller. By inheriting from the `BaseController`  class, it is easy to create new controllers as needed.
 
@@ -170,12 +178,16 @@ By using the variable step integrator and implementing controllers, we can now s
 
 ## Visualization
 
-Pinocchio provides several options for visualizing robots. The most commonly used visualizer is Meshcat, which is included with Pinocchio. In order to visualize the motion of the flexible  pendulum system, I have implemented visualize_elastic_pendulum function in the `visualization.py`  module which can use either the Meshcat or Panda3d visualizers.
+Pinocchio provides several options for visualizing robots. In order to visualize the motion of the flexible  pendulum system, I have implemented visualize_elastic_pendulum function in the `visualization.py`  module which can use either the Meshcat or Panda3d visualizers of Pinocchio.
 
 ## Some simulation results
-In RFEM modeling of deformable objects, discretization greatly affects the accuracy, to be more precise, the natural frequency apporoximation of the continuum material. As with any discretization method the finer is the discretizatio the more accurate is the approximation. Without going into quantitve analysis, let's visually analyse the motion of the pendulum for three different discretizations: 3, 5 and 10 segment models. We will use PD controller  with zero reference for the active angle $$q_a^r = 0$$ for 2.5 seconds, then change the reference to  $$q_a^r = \pi/4$$ for the next 2.5 seconds.  Figure 4 shows the comparison between different models. There might be small synchorization error, nevertheless there is a difference in the motion of different models.
+When using RFEM to model deformable objects, the accuracy is greatly influenced by the level of discretization. Specifically, the approximation of natural frequency of the continuum material is impacted. As with any discretization method, increasing the level of discretization improves the accuracy of the approximation.
+
+To demonstrate this visually, let's analyze the motion of a pendulum using three different discretizations: models with 3, 5, and 10 segments. If you're interested in a more quantitative analysis, please refer to [preprint of our paper](https://arxiv.org/abs/2212.02941) or [the RFEM book](https://books.google.de/books?id=PhD8FDAzNJEC&printsec=frontcover&source=gbs_book_other_versions_r&redir_esc=y#v=onepage&q&f=false).
+
+We'll use a PD controller with a zero reference for the active angle $$q_a^r = 0$$ rad for 2.5 seconds, then change the reference to $$q_a^r = \pi/4$$ rad for the next 2.5 seconds. The GIF below visualizes the motion of all three models. While there may be small synchronization errors, there is a noticeable difference: the model with 3 segments behaves differently compared to the models with 5 and 10 segments, which move similarly.
 
 <p style="align: left; text-align:center;">
-    <img src="/assets/img/blog/rfem_comparison.gif" alt width="55%"/>
-    <div class="caption">Figure 4. Comparison between three different RFEM discretizations. From left to right: 3 segments, 5 segments and 10 segments</div>
+    <img src="/assets/img/blog/rfem_comparison.gif" alt width="65%"/>
+    <!-- <div class="caption">Figure 4. Comparison between three different RFEM discretizations. From left to right: 3 segments, 5 segments and 10 segments</div> -->
 </p>
