@@ -13,17 +13,17 @@ categories:
 </p>
 
 
-The robotics community has shown significant interest in deformable object manipulation in recent years, with workshops hosted at ICRA and IROS in 2022. Both model-based and model-free approaches rely on accurate simulators. The finite element method (FEM), a powerful tool from continuum mechanics, can be computationally expensive. The rigid finite element method (RFEM) is a simpler and faster approach that can leverage existing rigid-body dynamics tools.
+The robotics community has shown significant interest in deformable object manipulation in recent years, with workshops hosted at [ICRA](https://deformable-workshop.github.io/icra2022/) and [IROS](https://romado-workshop.github.io/ROMADO2022/) in 2022. Both model-based and model-free approaches rely on accurate simulators. The finite element method (FEM), a powerful tool from continuum mechanics, can be computationally expensive for control. The rigid finite element method (RFEM) is a simpler and faster approach that can leverage existing rigid-body dynamics tools.
 
-While not a new method, the RFEM — also known as the extended-flexible joint method or pseudo-rigid body method — remains a valuable modeling technique in robotics. This post explores its basic principles, limitations, and trade-offs, and provides a practical tutorial on simulating simple deformable linear object in Python using the Pinocchio library.
+While not a new method, the RFEM — also known as the extended-flexible joint method or pseudo-rigid body method — remains a valuable modeling technique in robotics. This post explores its basic principles, limitations, and trade-offs, and provides a practical tutorial on simulating simple deformable linear object in Python using the [Pinocchio](https://stack-of-tasks.github.io/pinocchio/) library.
 
 Whether you're a seasoned researcher or new to the field, this post offers valuable insights and practical guidance on using the RFEM to model deformable linear objects.
 
 
 # Basics of the RFEM
-RFEM is a simple technique used to analyze deformable objects by breaking them down into smaller parts called rigid finite elements (rfes) and connecting them with spring-damping elements (sde). The technique uses generalised coordinates based on the elements' displacements to describe the position of the system. 
+RFEM is a pretty straightforward way to study deformable objects by dividing them into smaller parts called rigid finite elements (rfes) and connecting them with spring-damping elements (sde). The technique uses generalised coordinates based on the elements' displacements to describe the position of the system. 
 
-To help illustrate this concept, let's consider a simple example of a cylindrical rod attached to a motor, as shown in Figure 1. This system can be thought of as an elastic pendulum or a deformable linear object that is manipulated by a robot arm. Let's limit our discussion to only dominant bending flexibility and describe the displacements of each rfe relative to the preceding element.
+To make things clearer, let's consider a simple example of a cylindrical rod attached to a motor, as you an see in Figure 1. This setup can be thought of as an elastic pendulum or a deformable linear object that is manipulated by a robot arm. For now, we will only talk about dominant bending flexibility and describe the displacements of each rfe relative to the preceding element.
 
 <p style="align: left; text-align:center;">
     <img src="/assets/img/blog/RFEM_orig.png" alt width="50%"/>
@@ -32,8 +32,8 @@ To help illustrate this concept, let's consider a simple example of a cylindrica
 
 The RFEM discretizes in two stages:
 
-1. Primary division: dividing the deformable object of length $$L$$ into relatively simple elements with finite dimension $$\Delta l$$, their spring and damping features concentrate at one point (the sde is obtained in this way) (Figure 2a).
-2. Secondary division: isolating rfes between sdes from the primary division, we obtain a system of rfes connected by sdes (Figure 2b).
+1. Primary division: dividing the deformable object of length $$L$$ into relatively simple elements with finite dimension $$\Delta l$$ and concentrating their spring and damping features at one point as you can see in Figure 2a (the sde is obtained in this way);
+2. Secondary division: isolating rfes between sdes from the primary division to obtain a system of rfes connected by sdes (Figure 2b).
 
 <p style="align: left; text-align:center;">
     <img src="/assets/img/blog/RFEM_discr.png" alt width="55%"/>
@@ -173,4 +173,9 @@ By using the variable step integrator and implementing controllers, we can now s
 Pinocchio provides several options for visualizing robots. The most commonly used visualizer is Meshcat, which is included with Pinocchio. In order to visualize the motion of the flexible  pendulum system, I have implemented visualize_elastic_pendulum function in the `visualization.py`  module which can use either the Meshcat or Panda3d visualizers.
 
 ## Some simulation results
-In RFEM modeling of deformable objects, discretization greatly affects the accuracy, to be more precise, the natural frequency apporoximation of the continuum material. As with any discretization method the finer is the discretizatio the more accurate is the approximation. Without going into quantitve analysis, let's visually analyse the motion of the pendulum for three different discretizations: 3, 5 and 10 segment models. We will use PD controller  with zero reference for the active angle $$q_a^r = 0$$ for 2.5 seconds, then change the reference to  $$q_a^r = \pi/4$$ for the next 2.5 seconds.  
+In RFEM modeling of deformable objects, discretization greatly affects the accuracy, to be more precise, the natural frequency apporoximation of the continuum material. As with any discretization method the finer is the discretizatio the more accurate is the approximation. Without going into quantitve analysis, let's visually analyse the motion of the pendulum for three different discretizations: 3, 5 and 10 segment models. We will use PD controller  with zero reference for the active angle $$q_a^r = 0$$ for 2.5 seconds, then change the reference to  $$q_a^r = \pi/4$$ for the next 2.5 seconds.  Figure 4 shows the comparison between different models. There might be small synchorization error, nevertheless there is a difference in the motion of different models.
+
+<p style="align: left; text-align:center;">
+    <img src="/assets/img/blog/rfem_comparison.gif" alt width="55%"/>
+    <div class="caption">Figure 4. Comparison between three different RFEM discretizations. From left to right: 3 segments, 5 segments and 10 segments</div>
+</p>
