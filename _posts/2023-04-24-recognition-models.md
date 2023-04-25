@@ -69,4 +69,18 @@ $$\mathcal{L}_2 = \sum_{j=1}^{N} ||z_{k+j} - \hat z_{k+j}||_2^2$$
 
 $$\mathcal{L}_3 = \sum_{j=1}^N||h_{k+j} - \psi(\hat z_{k+j})||$$
 
-One paper where such an approach has been used in combination with SINDY is [1]. Check it out for more detail.
+The total loss function is the weighted sum of the individual losses: $$\mathcal{L} = \alpha \mathcal{L}_1 + \beta \mathcal{L}_2 + \gamma \mathcal{L}_3$$ . One paper where such an approach has been used in combination with [SINDY](https://en.wikipedia.org/wiki/Sparse_identification_of_non-linear_dynamics) is [link](https://arxiv.org/abs/2201.05136). Check it out for more detail.
+
+
+# RNN Encoders
+
+Another machine learning approach is to use an RNN as an encoder to learn the latent dynamics. In this method, we take a sequence of observation and external input pairs $$(y_{k}, u_{k}),\ (y_{k+1}, u_{k+1}),\ \dots, \ (y_{k+M}, u_{k+M})$$ and feed it to an RNN backwards in time, where the final state of the RNN is the sought-after state $$z_k$$. In a probabilistic setting, the final state of the RNN represents the mean and covariance of the distribution $$z_k \sim \mathcal{N}(\mu_k, \Sigma_k)$$. Typically, the RNN encoders state is initialized with a zero vector. 
+
+<p style="align: left; text-align:center;">
+    <img src="/assets/img/blog/RNN-encoder.png" alt width="90%"/>
+    <div class="caption">Figure 4. RNN encoder based latent dynamics learning</div>
+</p>
+
+If you are familiar with sequence-to-sequence modeling, you may recognize the RNN encoder architecture from machine translation. In this context, the RNN encoder provides context for the RNN decoder, which generates a translation based on it.
+
+This scheme works well due to the stability of dynamical systems. It is known that stable dynamical systems "forget" their initial state and converge to a stationary point. RNN encoders have been used in previous works such as [2] and [3]. The arguments for the stability of the RNN for accurate state estimation are explained in [].
