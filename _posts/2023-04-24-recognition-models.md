@@ -12,19 +12,19 @@ Imagine you're trying to predict the behavior of a complex system, like a weathe
 In this post, we'll explore several methods for learning system dynamics from partial observations. We'll discuss why this problem is important, and why it's relevant to real-world applications like predicting weather, stock prices or robot behavior. By the end of this post, you'll have a better understanding of the challenges involved in learning system dynamics from partial observations, and the methods that are currently being used to tackle this problem.
 
 # Problem formulation
-To understand how we can learn system dynamics from partial observations, we need to define the problem more precisely. Let's start with the ground truth nonlinear dynamics, which can be defined by the following difference equation:
+To understand how we can learn system dynamics from partial observations, we need to define the problem more precisely. Let's start with the ground truth nonlinear discrete dynamics, which can be defined by the following difference equation:
 
 $$
 x_{k+1} = F\big(x_k, u_k, \theta_{r}\big)
 $$
 
-where $$x_k = x(t_k)$$ is the vector of states of the system at time $$t_k$$, $$u_k$$ is the vector of external inputs and $$\theta_r$$ the vector of true parameters of the system. Let $$y_k$$ represent noisy observations (measurement) of the system
+where $$x_k = x(t_k)$$ is the vector of states of the system at time $$t_k$$, $$u_k$$ is the vector of external inputs and $$\theta_r$$ is the vector of true parameters of the system. Let $$y_k$$ represent noisy observations (measurements) of the system
 
 $$
 y_k = H\big(x_k\big) + \nu_k
 $$
 
-where $$\nu_k$$ is a noise.  As an example, imagine we want to learn a robot dynamics shown in Figure 1. Starting from an initial latent state $$x_0$$ we can apply a sequence of external control inputs (joint torques, to be more precise) and measure some variabls, for example, positions of some keypoints using a camera. 
+where $$H(x_k)$$ is the state-to-observation map and $$\nu_k$$ is a noise.  As an example, imagine we want to learn a robot dynamics shown in Figure 1. Starting from an initial latent state $$x_0$$ we can apply a sequence of external control inputs (joint torques, to be more precise) and measure some variables, for example, positions of some keypoints using a camera. 
 
 <p style="align: left; text-align:center;">
     <img src="/assets/img/blog/panda-dynamics-example.png" alt width="90%"/>
@@ -32,9 +32,9 @@ where $$\nu_k$$ is a noise.  As an example, imagine we want to learn a robot dyn
 </p>
 
 
-Given these noisy measurements, we would like to learn an approximation of the original system dynamics $$z_k = \hat F(z_k, u_k, \theta_a)$$ with $$\hat F(\cdot)$$ being the approximation of the original state transition map $$F(\cdot)$$ and $$\theta_a$$ being the parameters of the approximate transition map. If we know the dimension of the original state $$x$$ and happy about the dimension size, then we can choose $$z$$ to be of the same size. Otherwise — if we don’t know the dimension or want to find a lower dimensional approximation of the map $$F(\cdot)$$ — we can choose the dimension of $$z$$ arbitrarily to a degree that it can accurately predict outputs $$y.$$ 
+Given these noisy measurements, we would like to learn an approximation of the original system dynamics $$z_{k+1} = \hat F(z_k, u_k, \theta_a)$$ with $$\hat F(\cdot)$$ being the approximation of the original state transition map $$F(\cdot)$$ and $$\theta_a$$ being the parameters of the approximate transition map. If we know the dimension of the original state $$x$$, then we can choose $$z$$ to be of the same size. Otherwise — if we don’t know the dimension or want to find a lower dimensional approximation of the map $$F(\cdot)$$ — we can choose the dimension of $$z$$ arbitrarily to a degree that it can accurately predict outputs $$y.$$ 
 
-For the sake of simplicity, lets use recurrent neural networks (RNNs) for approximating the dynamics. Figure 2 shows schematically the working principle of the vanilla RNN. In a nutshell, RNN takes an input $$u_k$$ and state $$\hat z_k$$ and spits out the next state $$\hat z_{k+1}$$.
+For the sake of simplicity, lets use recurrent neural networks (RNNs) for approximating the dynamics. Figure 2 shows schematically the working principle of the vanilla RNN, where each rhomb is an RNN block. In a nutshell, RNN takes an input $$u_k$$ and state $$\hat z_k$$ and spits out the next state $$\hat z_{k+1}$$.
 
 <p style="align: left; text-align:center;">
     <img src="/assets/img/blog/rnn-schematics.png" alt width="60%"/>
@@ -42,7 +42,7 @@ For the sake of simplicity, lets use recurrent neural networks (RNNs) for approx
 </p>
 
 
-To sum up, we are interested in learning the model of a complex dynamical system using partial observations. The model should accurately predict $$N$$ next states/observations of the system. In essence, the problem we trying to solve boils down to finding an initial state $$z_0$$ that will be used by RNN to propagate the dynamics and state-to-output transformation $$\hat H(\cdot)$$. Now, lets dive into several methods that have been proposed to solve the this problem.
+To sum up, we are interested in learning the model of a complex dynamical system using partial observations. The model should accurately predict $$N$$ next states/observations of the system: $$z_{k+1}$$, $$z_{k+2}$$, $$\dots$$, $$z_{k+N+1}$$. In essence, the problem we trying to solve boils down to finding an initial state $$z_0$$ that will be used by RNN to propagate the dynamics and state-to-observation transformation $$\hat H(\cdot)$$. Now, lets dive into several methods that have been proposed to solve this problem.
 
 # Autoencoders
 
@@ -77,10 +77,37 @@ The total loss function is the weighted sum of the individual losses: $$\mathcal
 Another machine learning approach is to use an RNN as an encoder to learn the latent dynamics. In this method, we take a sequence of observation and external input pairs $$(y_{k}, u_{k}),\ (y_{k+1}, u_{k+1}),\ \dots, \ (y_{k+M}, u_{k+M})$$ and feed it to an RNN backwards in time, where the final state of the RNN is the sought-after state $$z_k$$. In a probabilistic setting, the final state of the RNN represents the mean and covariance of the distribution $$z_k \sim \mathcal{N}(\mu_k, \Sigma_k)$$. Typically, the RNN encoders state is initialized with a zero vector. 
 
 <p style="align: left; text-align:center;">
-    <img src="/assets/img/blog/RNN-encoder.png" alt width="90%"/>
+    <img src="/assets/img/blog/RNN-encoder.png" alt width="85%"/>
     <div class="caption">Figure 4. RNN encoder based latent dynamics learning</div>
 </p>
+If you are familiar with sequence-to-sequence modeling, you may recognize the RNN encoder architecture from machine translation. In this context, the RNN encoder provides "context" for the RNN decoder, which generates a translation based on it.
 
-If you are familiar with sequence-to-sequence modeling, you may recognize the RNN encoder architecture from machine translation. In this context, the RNN encoder provides context for the RNN decoder, which generates a translation based on it.
+This scheme works well due to the stability of dynamical systems. Stable dynamical systems "forget" their initial state and converge to a stationary point. Therefore, it's a good idea to choose a relatively large input sequence MM to give it time to converge. RNN encoders have been used extensively in learning latent dynamics with neural ordinary differential equations, for example in [this](https://arxiv.org/abs/1806.07366) and [this](https://arxiv.org/abs/1907.03907) papers. 
 
-This scheme works well due to the stability of dynamical systems. It is known that stable dynamical systems "forget" their initial state and converge to a stationary point. RNN encoders have been used in previous works such as [2] and [3]. The arguments for the stability of the RNN for accurate state estimation are explained in [].
+# Learning the initial state
+The system identification community has developed its own tools for learning latent dynamics, and one of the simplest methods is to make the initial state an optimization variable and eliminate the need for an encoder. This approach is often used for grey box system identification, where the system structure $$F(x_k, u_k, \theta_r)$$ and the state-to-output map $$H(x_k)$$ are known but the parameters $$\theta_r$$ are not. However, this method can also be used for more generic (black box) model architectures such as RNNs. Nevertheless, making the initial state an optimization variable increases the number of optimization variables, especially when using mini-batch optimization. Therefore, it only makes sense to learn the initial state when trying to predict long horizons and using batch optimization. This method has been used in various works, including the [work](https://github.com/meco-group/nlgreyfast) by my colleague in [MECO](https://www.mech.kuleuven.be/en/pma/research/meco) Andras.
+
+<p style="align: left; text-align:center;">
+    <img src="/assets/img/blog/learn-initial-state.png" alt width="65%"/>
+    <div class="caption">Figure 5. Learning latent state for latent dynamics learning</div>
+</p>
+
+
+# KKL encoder
+The majority of control policies for robots, planes, or chemical plants rely on the latent state to compute the action. Control engineers have developed algorithms called state estimators or observers to infer latent states from partial observations. The most famous among them are [the Kalman filter](https://en.wikipedia.org/wiki/Kalman_filter) and its variations, such as [the extended Kalman filter](https://en.wikipedia.org/wiki/Extended_Kalman_filter) and [the unscented Kalman filter](https://quantdare.com/beyond-linear-ii-the-unscented-kalman-filter/). However, most state estimation algorithms heavily rely on the latent dynamical model of the system. In our setting, using classical state observers would lead to a chicken-and-egg problem: we need to infer the latent state from partial observations to learn the latent dynamical model, but we need the latent dynamical model to do so.
+
+Among the few state estimation algorithms that do not heavily rely on an accurate dynamical model is the Kazantzis-Kravaris Luenberger (KKL) observer. The KKL observer separates the latent dynamics $$z_{k+1} = \hat F(z_k, u_k, \theta_a)$$ from the observer dynamics and assumes linear dynamics for the observer, where the state of the KKL observer, denoted by xi, evolves according to the following equation:
+
+$$
+\xi_{k+1} = D \xi_k + G 
+\begin{bmatrix}
+y_k \\ u_k
+\end{bmatrix}
+$$
+
+where $$D$$ is a stable state matrix with eigenvalues $$-1 < \lambda_i < 1$$. The stability requirement guarantees that no matter how we initialize $$\xi$$, after a sufficiently long time, the observer will converge and "forget" its initial state. The KKL observer is able to separate observer dynamics from latent dynamics because there exists a smooth invertible map $$\mathcal{T}$$ that goes from our latent state $$z$$ to the observer state $$\xi$$ and back. Unfortunately, there is no ready-to-use recipe for finding such a map. In practice, we can think of the map $$\mathcal{T}$$ and its inverse $$\mathcal{T}^*$$ as an autoencoder that is jointly learned together with the latent dynamics. The difference between the purely autoencoder approach and the KKL observer approach is that the input of the encoder is the KKL observer state instead of a sequence of observations and external inputs (as shown in Figure 6). Check out [this](https://arxiv.org/abs/2205.12550) paper, if you want to learn more about KKL encoder method.
+
+<p style="align: left; text-align:center;">
+    <img src="/assets/img/blog/KKL-encoder.png" alt width="95%"/>
+    <div class="caption">Figure 6. KKL encoder based latent dynamics learning</div>
+</p>
