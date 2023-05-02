@@ -24,7 +24,7 @@ $$
 y_k = H\big(x_k\big) + \nu_k
 $$
 
-where $$H(x_k)$$ is the state-to-observation map and $$\nu_k$$ is a noise.  As an example, imagine we want to learn a robot dynamics shown in Figure 1. Starting from an initial latent state $$x_0$$ we can apply a sequence of external control inputs (joint torques, to be more precise) and measure some variables, for example, positions of some keypoints using a camera. 
+where $$H(x_k)$$ is the state-to-observation map and $$\nu_k$$ is a noise.  As an example, imagine we need to learn a robot dynamics shown in Figure 1. The states of the robot are joint positions and velocities. But assume that the data are external inputs (joint torques) and positions of some keypoints measured using a camera while the robot is moving. 
 
 <p style="align: left; text-align:center;">
     <img src="/assets/img/blog/panda-dynamics-example.png" alt width="90%"/>
@@ -32,17 +32,23 @@ where $$H(x_k)$$ is the state-to-observation map and $$\nu_k$$ is a noise.  As a
 </p>
 
 
-Given these noisy measurements, we would like to learn an approximation of the original system dynamics $$z_{k+1} = \hat F(z_k, u_k, \theta_a)$$ with $$\hat F(\cdot)$$ being the approximation of the original state transition map $$F(\cdot)$$ and $$\theta_a$$ being the parameters of the approximate transition map. If we know the dimension of the original state $$x$$, then we can choose $$z$$ to be of the same size. Otherwise — if we don’t know the dimension or want to find a lower dimensional approximation of the map $$F(\cdot)$$ — we can choose the dimension of $$z$$ arbitrarily to a degree that it can accurately predict outputs $$y.$$ 
-
-For the sake of simplicity, lets use recurrent neural networks (RNNs) for approximating the dynamics. Figure 2 shows schematically the working principle of the vanilla RNN, where each rhomb is an RNN block. In a nutshell, RNN takes an input $$u_k$$ and state $$\hat z_k$$ and spits out the next state $$\hat z_{k+1}$$.
+Given these noisy measurements, we would like to learn an approximation of the original system dynamics $$\hat z_{k+1} = \hat F(\hat z_k, u_k, \theta_a)$$ with $$\hat F(\cdot)$$ being the approximation of the original state transition map $$F(\cdot)$$ and $$\theta_a$$ being the parameters of the approximate transition map. If we know the dimension of the original state $$x$$, then we can choose $$z$$ to be of the same size. Otherwise — if we don’t know the dimension or want to find a lower dimensional approximation of the map $$F(\cdot)$$ — we can choose the dimension of $$z$$ arbitrarily to a degree that it can accurately predict outputs $$y.$$ 
 
 <p style="align: left; text-align:center;">
     <img src="/assets/img/blog/rnn-schematics.png" alt width="60%"/>
     <div class="caption">Figure 2. Working principle of an RNN</div>
 </p>
 
+For the sake of simplicity, lets use recurrent neural networks (RNNs) for approximating the dynamics. Figure 2 shows schematically the working principle of the vanilla RNN, where each rhomb is an RNN block. In a nutshell, RNN takes an input $$u_k$$ and state $$\hat z_k$$ and spits out the next state $$\hat z_{k+1}$$. Mathematically spaeking, vanilla RNN propagates dynamics by 
 
-To sum up, we are interested in learning the model of a complex dynamical system using partial observations. The model should accurately predict $$N$$ next states/observations of the system: $$z_{k+1}$$, $$z_{k+2}$$, $$\dots$$, $$z_{k+N+1}$$. In essence, the problem we trying to solve boils down to finding an initial state $$z_0$$ that will be used by RNN to propagate the dynamics and state-to-observation transformation $$\hat H(\cdot)$$. Now, lets dive into several methods that have been proposed to solve this problem.
+$$
+\hat z_{k+1} = \tanh(W_{\hat z} \hat z_k + W_u u_k + b). 
+$$
+
+
+
+
+To sum up, we are interested in learning the model of a complex dynamical system from partial observations. The model should accurately predict $$N$$ next states/observations of the system: $$z_{k+1}$$, $$z_{k+2}$$, $$\dots$$, $$z_{k+N+1}$$. In essence, the problem we trying to solve boils down to finding an initial state $$z_0$$ that will be used by RNN to propagate the dynamics and state-to-observation transformation $$\hat H(\cdot)$$. Now, lets dive into several methods that have been proposed to solve this problem.
 
 # Autoencoders
 
@@ -111,3 +117,11 @@ where $$D$$ is a stable state matrix with eigenvalues $$-1 < \lambda_i < 1$$. Th
     <img src="/assets/img/blog/KKL-encoder.png" alt width="95%"/>
     <div class="caption">Figure 6. KKL encoder based latent dynamics learning</div>
 </p>
+
+# Conclusions
+
+In real life, we often have to train models to predict the behavior of complex dynamic systems based on partial observations. To train a model with hidden variables, we need to somehow estimate/reconstruct the initial hidden state, and then propagate the hidden state using the chosen architecture and sequence of (external) inputs. There are various methods for estimating the initial hidden state. Perhaps the simplest method is to make the initial state an optimization variable. This method has one major drawback: depending on the type of learning (batch vs mini-batch) and the duration of the dynamics propagation, the number of optimization variables can grow significantly. 
+
+The most common method is probably the autoencoder, where the encoder takes a sequence of partial observations and external inputs as input and returns the hidden state. The decoder, in turn, takes the hidden state as input and tries to reconstruct the encoder input. The next two methods - RNN and KKL encoders - are dynamic: they take a partial observation and an external input as input, propagate the dynamics back in time to find the initial hidden state.
+
+In [this](https://arxiv.org/abs/2205.12550) article, it is shown that the difference between different approaches is not very significant for modeling the hidden dynamics of an exoskeleton. Therefore, in practice, I would first implement an autoencoder. If the model quality is unsatisfactory, I would switch to dynamic encoders.
