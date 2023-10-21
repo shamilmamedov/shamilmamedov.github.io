@@ -40,8 +40,7 @@
       institution: deepschool.ru  
       year: June 2023 - 
       description:
-        - Writing articles on deep learning in Russian
-        - <a href="https://deepschool-pro.notion.site/9a613d3c8d3644faa8e396bd083f2bc2?v=188f6b4370e648fea494cc2fe04621dc">Link to articles (I'm author 6) </a>
+        - <a href="https://deepschool-pro.notion.site/9a613d3c8d3644faa8e396bd083f2bc2?v=188f6b4370e648fea494cc2fe04621dc">Writing articles on deep learning in Russian (I'm author 6) </a>
 
     - title: Visiting Researcher
       institution: RWTH Aachen University, Germany
@@ -57,11 +56,7 @@
         - Dynamic model identification, external torque estimator design and collision detection for UR10E
         - Modeling compliance of industrial robots under high loads
 
-- title: Certificates
-  type: list
-  contents:
-    - Machine Learning, Deep Learning 
-
+  
 - title: Academic Interests
   type: nested_list
   contents:
@@ -71,6 +66,23 @@
     - title: Safe learning control
       items:
         - Model-based controllers like MPC perform well provided good model but they are computationaly heavy for many application. Can we approximate them while providing safety guarantees?
+
+- title: Certificates
+  type: list
+  contents:
+    - <a href="https://drive.google.com/file/d/1T-qxyGXnMIxN83fBCBm7iddnR1BdWfnY/view?usp=sharing">Machine Learning </a>,
+      <a href="https://drive.google.com/file/d/1WFS5ZQGMqaZJpi44qESX4hbWAg6mX_Yu/view?usp=sharing">Deep Learning </a>,
+      <a href="https://drive.google.com/file/d/1907u_hBMj_n_nimOsASz3cr9Ik2bPW7F/view?usp=sharing">Model Predictive Control and Reinforcement Learning</a>
+
+- title: Skills
+  type: list
+  contents:
+    - <u>Programming:</u> Python, Matlab, C++
+    - <u>Robotics:</u> Kinematics and Dynamics, Trajectory Optimization, Robot Operating System (ROS)
+    - <u>Machine Learning:</u> JAX, PyTorch, Scikit-learn
+    - <u>Optimization:</u> CasADi, Acados, IPOPT
+    - <u>Control:</u> Optimal Control, Model Predictive Control, Nonlinear Control, Imitation Learning, Reinforcement Learning, State Estimation, Kalman Filter
+
 
 - title: Other Interests
   type: list
