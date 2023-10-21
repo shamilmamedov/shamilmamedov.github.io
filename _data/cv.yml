@@ -12,13 +12,13 @@
   type: time_table
   contents:
     - title: PhD in Engineering Science
-      institution: Katholieke Universiteit Leuven, Belgium
+      institution: KU Leuven, Belgium
       year: 2021 - 
       description:
         - "Advisor: Jan Swevers"
         - title: "Thesis: manipulation of flexible/deformable objects"
           contents:
-            - Model identification and learning
+            - Learning physics-informed models of deformable objects and flexible robots
             - Model-based optimal control
     - title: MSc. in Automation and Control Engineering
       institution: Politecnico di Milano, Italy
@@ -36,6 +36,19 @@
 - title: Experience
   type: time_table
   contents:
+    - title: Content Writer on Deep Learning
+      institution: deepschool.ru  
+      year: June 2023 - 
+      description:
+        - Writing articles on deep learning in Russian
+        - <a href="https://deepschool-pro.notion.site/9a613d3c8d3644faa8e396bd083f2bc2?v=188f6b4370e648fea494cc2fe04621dc">Link to articles (I'm author 6) </a>
+
+    - title: Visiting Researcher
+      institution: RWTH Aachen University, Germany
+      year: Feb 2023 - May 2023
+      description:
+        During my research stay in Sebastian Trimpe's group, I collaborated closely with Sebastian Trimpe and Rene Geist on the modeling of deformable linear objects, including ropes, cables, and long rods. Our work focused on the development of an interpretable model that merges concepts from the rigid finite element method with data-driven deep recurrent models.
+
     - title: Junior Robotics Researcher
       institution: Innopolis University, Center of Robotics
       year: 2017 - 2021
@@ -54,10 +67,10 @@
   contents:
     - title: Physics informed machine learning
       items: 
-        - Combining constituent physics model and function approximators for modeling flexible and deformable objects
+        - Combining constituent physics model and function approximators for modeling complex physics such as flexible and deformable objects
     - title: Safe learning control
       items:
-        - Model-based controllers like MPC perform well provided good model but they are computationaly heavy for many application. Can we approximate them while giving safety guarantees?
+        - Model-based controllers like MPC perform well provided good model but they are computationaly heavy for many application. Can we approximate them while providing safety guarantees?
 
 - title: Other Interests
   type: list
