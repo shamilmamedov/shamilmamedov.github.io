@@ -17,6 +17,8 @@ More advanced and promising approach is nonlinear model predictive control (NMPC
 In this work we first formulate NMPC denoted as $$\pi_{NMPC}(x)$$ and show that it can successfully used for controlling flexible robot.   Then, we propose to approximate NMPC  using imitation learning algorithm called DAgger offline $$\pi_{NN}(x)$$. To guarantee safety of the approximated NMPC law, we propose to filter the output of $$\pi_{NN}(x)$$ with the safety filter. 
 
 <p style="align: left; text-align:center;">
-    <img src="/assets/img/projects/method.png" alt width="70%"/>
+    <img src="/assets/img/projects/method.png" alt width="100%"/>
     <div class="caption">Figure 1. Proposed method for safe approximation of NMPC</div>
 </p>
+
+# Results

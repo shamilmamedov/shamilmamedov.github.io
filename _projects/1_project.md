@@ -18,17 +18,19 @@ Imagine you want to dynamically manipulate a flexible object such as a beam with
 Existing solutions for addressing the vibrations 
 - use **expensive sensors** such as force-torque sensors;
 - require **specialized grippers** such as vacuum grippers;
-- exploit **complicated dynamic models** of a whole system.
+- exploit **complicated dynamic models** of the whole system.
 
 # Method 
 
 We propose a method for vibration-free manipulation of flexible beams that does not require any **exteroceptive sensor**. 
 
+<!-- TODO Change font size in the figure -->
 <p style="align: left; text-align:center;">
-    <img src="/assets/img/projects/beam_handling_method.png" alt width="70%"/>
+    <img src="/assets/img/projects/beam_handling_method.png" alt width="100%"/>
     <div class="caption">Figure 1. The proposed method for vibration-free beam handling</div>
 </p>
 
+<!-- Need to rewrite to reflect new method part -->
 Given a task specification  -- such as initial configuration of the robot $$q$$ and and a final position of the beam's tip -- the method utilizes a simple dynamic model of the beam and plans a trajectory in the joint space of the robot: $$q(t),\ \dot q(t)$$ and $$ \ddot q(t)$$). Subsequently, the optimized trajectory is executed by a robot and results in almost vibration-free task execution.  
 
 ## Modeling

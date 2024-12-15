@@ -23,11 +23,12 @@ At a high level, our work addresses the following problem: *given measurements o
 
 # Proposed method
 We propose an interpretable method employing an *encoder-dynamics-decoder* architecture. To elaborate:
+- **state representation** we leverage a state representation of lumped parameter modeling approach called  pseudo-rigid body method;
 - **encoder** reconstructs hidden states $$h_k$$ from partial observations $$y_k$$ and controlled inputs $$x_k$$;
 - **dynamics** unrolls hidden states over time based on controlled inputs $$x_k, x_{k+1},\dots,x_{k+N}$$;
 - **decoder** maps hidden states and inputs into observartions.'
 
-The proposed method named Finite Element Inspired Netowork (FEIN) is visualized below.
+The proposed method named PRB-Net is visualized below.
 <p style="align: left; text-align:center;">
     <img src="/assets/img/projects/dlo-method.png" alt width="100%"/>
     <div class="caption"> </div>
