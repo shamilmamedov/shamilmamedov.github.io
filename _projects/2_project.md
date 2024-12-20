@@ -22,3 +22,33 @@ In this work we first formulate NMPC denoted as $$\pi_{NMPC}(x)$$ and show that 
 </p>
 
 # Results
+
+<!-- <div style="display: flex; justify-content: center; gap: 10px; align-items: center;">
+    <div style="text-align: center;">
+        <img src="/assets/img/projects/nmpc_vs_sanmpc_rollout_1.gif" alt="Task 1" style="width: 100%;" />
+        <div class="caption">Caption 1</div>
+    </div>
+    <div style="text-align: center;">
+        <img src="/assets/img/projects/nmpc_vs_sanmpc_rollout_1.gif" alt="Task 2" style="width: 100%;" />
+        <div class="caption">Caption 2</div>
+    </div>
+    <div style="text-align: center;">
+        <img src="/assets/img/projects/nmpc_vs_sanmpc_rollout_1.gif" alt="Task 3" style="width: 100%;" />
+        <div class="caption">Caption 3</div>
+    </div>
+</div> -->
+
+<p style="align: left; text-align:center;">
+    <img src="/assets/img/projects/nmpc_vs_sanmpc_rollout_1.gif" alt width="70%"/>
+    <div class="caption"> </div>
+</p>
+
+<p style="align: left; text-align:center;">
+    <img src="/assets/img/projects/nmpc_vs_sanmpc_rollout_2.gif" alt width="70%"/>
+    <div class="caption"> </div>
+</p>
+
+<p style="align: left; text-align:center;">
+    <img src="/assets/img/projects/nmpc_vs_sanmpc_rollout_3.gif" alt width="70%"/>
+    <div class="caption"> </div>
+</p>
